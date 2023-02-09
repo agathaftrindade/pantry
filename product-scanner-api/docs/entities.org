@@ -1,0 +1,26 @@
+* Entities
+** Brands
+  - id
+  - name
+  - ean_prefix
+
+** Products
+  - id
+  - name
+  - brand_id
+  - ean_code
+  - photo_url : url <optional>
+
+** Purchases
+  - id
+  - event_datetime
+  - location
+  - comment
+
+** Purchase_Products
+  - id
+  - purchase_id
+  - product_id
+  - price
+  - quantity : double
+  - expires_at : datetime
