@@ -23,4 +23,5 @@
   - product_id
   - price
   - quantity : double
+  - quantity_type
   - expires_at : datetime
