@@ -3,7 +3,7 @@ import PurchaseList from '../components/PurchaseList.vue'
 </script>
 
 <template>
-  <Suspense>
-    <PurchaseList />
-  </Suspense>
+    <Suspense>
+        <PurchaseList />
+    </Suspense>
 </template>

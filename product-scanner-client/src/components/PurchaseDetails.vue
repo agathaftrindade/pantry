@@ -1,44 +1,54 @@
 <script setup>
 import {ref, computed} from 'vue'
+import {useRouter, useRoute } from 'vue-router'
 import PurchaseService from '../services/PurchaseService.js'
 
 import {DateTime} from 'luxon'
-// 
-// const state = ref({
-//     purchase: {},
-//     products: []
-// })
-// 
 
-function formatDate (s) {
+const router = useRouter()
+const route = useRoute()
+const numberFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+
+const formatDate = (s) => {
     return DateTime.fromISO(s)
                    .setLocale('pt-br')
                    .toFormat('dd/MM/yyyy')
 }
 
-function formatDatetime (s) {
+const formatDatetime = (s) => {
     return DateTime.fromISO(s)
                    .setLocale('pt-br')
                    .toFormat('dd/MM/yyyy HH:mm')
 }
 
-const numberFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
-
-function formatPrice(p) {
+const formatPrice = (p) => {
     return numberFormatter.format(p)
+}
+
+function increaseItem(item) {
+    item.quantity += 1
+}
+
+function decreaseItem(item) {
+    if(item.quantity > 1)
+        item.quantity -= 1
+}
+
+function goToAddItem(item) {
+    router.push(`/purchases/${route.params.purchase_id}/add-item`)
 }
 
 const purchase = ref({})
 const purchaseItems = ref([])
 
 purchase.value = await PurchaseService.fetchPurchaseDetails()
-purchaseItems.value = new Array(20).fill(await PurchaseService.fetchPurchaseProducts()).flat() 
+purchaseItems.value = await PurchaseService.fetchPurchaseProducts()
 
 const purchaseTotal = computed(() => {
     return formatPrice(
-            purchaseItems.value
-                         .map(i => i.price * i.quantity)
-                         .reduce((a, b) => a + b, 0.0)
+        purchaseItems.value
+                     .map(i => i.price * i.quantity)
+                     .reduce((a, b) => a + b, 0.0)
     )
 })
 
@@ -56,7 +66,7 @@ const purchaseTotal = computed(() => {
             <div class="d-flex">
                 <p class="text-start align-self-center m-0">Total: {{purchaseTotal}}</p>
                 <div class="ms-auto ">
-                    <button class="btn btn-primary">Inserir Novo</button>
+                    <button class="btn btn-primary" @click="goToAddItem">Inserir Novo</button>
                 </div>
             </div>
         </header>
@@ -75,13 +85,14 @@ const purchaseTotal = computed(() => {
                         <div class="p-2 ms-auto quantity-col">
                             <div class="input-group">
                                 <span class="input-group-btn">
-                                    <button type="button" class="btn btn-default btn-number">
-                                        -
+                                    <button type="button" class="btn btn-default btn-number" @click="decreaseItem(item)">
+                                        <i class="bi-trash3" v-if="item.quantity == 1"></i>
+                                        <i class="bi-dash" v-else></i>
                                     </button>
                                 </span>
-                                <input type="number" class="input-number text-center quantity-input" value="1" min="1" max="10">
+                                <input type="number" class="input-number text-center quantity-input" :value="item.quantity" min="1" max="10">
                                 <span class="input-group-btn">
-                                    <button type="button" class="btn btn-default btn-number">
+                                    <button type="button" class="btn btn-default btn-number" @click="increaseItem(item)">
                                         +
                                     </button>
                                 </span>

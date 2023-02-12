@@ -31,7 +31,7 @@ export default {
                     }
                 },
                 price: 25.0,
-                quantity: 2.0,
+                quantity: 1.0,
                 quantity_type: 'UNIT',
                 expires_at: '2023-02-18T00:00:00'
             },
@@ -47,7 +47,7 @@ export default {
                     }
                 },
                 price: 12.0,
-                quantity: 1.0,
+                quantity: 2.0,
                 quantity_type: 'UNIT',
                 expires_at: '2023-10-25T00:00:00'
             }

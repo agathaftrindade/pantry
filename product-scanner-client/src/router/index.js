@@ -3,6 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import PurchaseIndexView from '../views/PurchaseIndexView.vue'
 import PurchaseDetailsView from '../views/PurchaseDetailsView.vue'
+import PurchaseItemsAddView from '../views/PurchaseItemsAddView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -18,10 +19,15 @@ const router = createRouter({
       component: PurchaseIndexView
     },
     {
-        path: '/purchases/:id',
+        path: '/purchases/:purchase_id',
         name: 'purchase_details',
         component: PurchaseDetailsView
     },
+      {
+          path: '/purchases/:purchase_id/add-item',
+          name: 'purchase-items-add',
+          component: PurchaseItemsAddView
+      },
     {
       path: '/about',
       name: 'about',
