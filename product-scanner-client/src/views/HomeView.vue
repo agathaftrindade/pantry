@@ -1,9 +1,8 @@
-<script setup>
-import PurchaseList from '../components/PurchaseList.vue'
-</script>
-
 <template>
-  <main>
-    <PurchaseList />
-  </main>
+  <div class="">
+      <h1 class="text-center">Home Page</h1>
+  </div>
 </template>
+
+<style>
+</style>

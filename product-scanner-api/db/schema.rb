@@ -29,12 +29,16 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_09_012024) do
   end
 
   create_table "purchase_products", force: :cascade do |t|
+    t.integer "purchase_id"
+    t.integer "product_id"
     t.decimal "price"
     t.integer "quantity"
     t.string "quantity_type"
     t.datetime "expires_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["product_id"], name: "index_purchase_products_on_product_id"
+    t.index ["purchase_id"], name: "index_purchase_products_on_purchase_id"
   end
 
   create_table "purchases", force: :cascade do |t|
@@ -46,4 +50,6 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_09_012024) do
   end
 
   add_foreign_key "products", "brands"
+  add_foreign_key "purchase_products", "products"
+  add_foreign_key "purchase_products", "purchases"
 end
