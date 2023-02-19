@@ -11,7 +11,7 @@ export default defineConfig({
     plugins: [
         vue(),
         vueJsx(),
-        // basicSsl(), 
+        // basicSsl(),
     ],
     resolve: {
         alias: {

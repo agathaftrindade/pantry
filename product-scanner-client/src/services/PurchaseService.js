@@ -52,5 +52,5 @@ export default {
                 expires_at: '2023-10-25T00:00:00'
             }
         ])
-    }
+    },
 }
