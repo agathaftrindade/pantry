@@ -17,40 +17,22 @@ export default {
         //     .then((response) => response.json())
     },
 
-    fetchPurchaseProducts() {
-        return Promise.resolve([
-            {
-                id: 1,
-                product: {
-                    id: 1,
-                    name: 'Limpador Veja Multiuso',
-                    gtin: '7891200329382',
-                    brand: {
-                        id: 1,
-                        name: 'Veja'
-                    }
-                },
-                price: 25.0,
-                quantity: 1.0,
-                quantity_type: 'UNIT',
-                expires_at: '2023-02-18T00:00:00'
+    fetchPurchaseProducts(purchaseId) {
+        const url = new URL(`/purchases/${purchaseId}/items/`, API_URL)
+        return fetch(url)
+            .then((response) => response.json())
+    },
+
+    createPurchaseItem(purchaseId, item) {
+
+        const url = new URL(`/purchases/${purchaseId}/items/`, API_URL)
+        return fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
             },
-            {
-                id: 2,
-                product: {
-                    id: 1,
-                    name: 'Azeite de Oliva Extra Virgem',
-                    gtin: '789183012383',
-                    brand: {
-                        id: 2,
-                        name: 'Andorinha'
-                    }
-                },
-                price: 12.0,
-                quantity: 2.0,
-                quantity_type: 'UNIT',
-                expires_at: '2023-10-25T00:00:00'
-            }
-        ])
+            body: JSON.stringify(item)
+        })
+            .then((response) => response.json())
     },
 }

@@ -1,21 +1,29 @@
 <script setup>
 import {ref, computed} from 'vue'
-import {useRouter, useRoute } from 'vue-router'
+import {useRouter } from 'vue-router'
 import PurchaseService from '../services/PurchaseService.js'
 
 import {DateTime} from 'luxon'
 
+const props = defineProps(['purchaseId'])
+
 const router = useRouter()
-const route = useRoute()
+
 const numberFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
 
 const formatDate = (s) => {
+    if(!s)
+        return null
+
     return DateTime.fromISO(s)
                    .setLocale('pt-br')
                    .toFormat('dd/MM/yyyy')
 }
 
 const formatDatetime = (s) => {
+    if(!s)
+        return null
+
     return DateTime.fromISO(s)
                    .setLocale('pt-br')
                    .toFormat('dd/MM/yyyy HH:mm')
@@ -35,14 +43,14 @@ function decreaseItem(item) {
 }
 
 function goToAddItem(item) {
-    router.push(`/purchases/${route.params.purchase_id}/add-item`)
+    router.push(`/purchases/${props.purchaseId}/add-item`)
 }
 
 const purchase = ref({})
 const purchaseItems = ref([])
 
-purchase.value = await PurchaseService.fetchPurchaseDetails()
-purchaseItems.value = await PurchaseService.fetchPurchaseProducts()
+purchase.value = await PurchaseService.fetchPurchaseDetails(props.purchaseId)
+purchaseItems.value = await PurchaseService.fetchPurchaseProducts(props.purchaseId)
 
 const purchaseTotal = computed(() => {
     return formatPrice(

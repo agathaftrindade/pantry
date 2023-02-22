@@ -9,6 +9,7 @@
     "test:unit": "vitest --environment jsdom --root src/"
   },
   "dependencies": {
+    "decimal.js": "^10.4.3",
     "lodash.debounce": "^4.0.8",
     "luxon": "^3.2.1",
     "pinia": "^2.0.26",

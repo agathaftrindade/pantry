@@ -1,9 +1,18 @@
 <script setup>
 import {ref, reactive, computed} from 'vue'
+import {useRouter } from 'vue-router'
+import {Decimal} from 'decimal.js';
+
 
 import EanScanner from './util/EanScanner.vue'
+import PurchaseService from '../services/PurchaseService.js'
 import BrandsService from '../services/BrandsService.js'
 import ProductsService from '../services/ProductsService.js'
+
+const Dec = Decimal.clone({ precision: 4, rounding: Decimal.ROUND_HALF_DOWN })
+
+const props = defineProps(['purchaseId'])
+const router = useRouter()
 
 const formData = reactive({
     brandQuery: '',
@@ -16,13 +25,42 @@ const formData = reactive({
     brandId: null,
     productId: null,
     quantity: null,
-    weighted: false
+    price: null,
+    priceType: 'per-unit',
+    weighted: false,
+    expiresAt: null
 })
 
 const scanInfo = reactive({
     active: false,
     scannedCode: null
 })
+
+const brandSearchPopupVisible = computed(() => formData.brandQuery && !formData.brandId)
+
+const productSearchPopupVisible = computed(() => formData.productQuery && !formData.productId)
+
+const unitPriceLabel = computed(() => {
+    if(formData.weighted)
+        return 'Por Kg'
+
+    return 'Por Unidade'
+})
+
+
+const unitaryPrice = computed(() => {
+    if(formData.priceType == 'total') {
+        if(!formData.price || !formData.quantity)
+            return null
+
+        return (new Dec(formData.price))
+            .dividedBy(formData.quantity)
+            .toNumber()
+    }
+
+    return formData.price
+})
+
 
 function toggleScan() {
     scanInfo.active = !scanInfo.active
@@ -72,9 +110,28 @@ function setWeighted(v){
     formData.weighted = v
 }
 
-const brandSearchPopupVisible = computed(() => formData.brandQuery && !formData.brandId)
+async function goBack() {
+    router.back()
+}
 
-const productSearchPopupVisible = computed(() => formData.productQuery && !formData.productId)
+async function createItem() {
+
+    const quantityType = formData.weighted? 'WEIGHTED' : 'UNIT'
+
+    const payload = {
+        product_id: formData.productId,
+        quantity: formData.quantity,
+        quantity_type: quantityType,
+        price: unitaryPrice.value,
+        expiresAt: formData.expiresAt
+    }
+
+    console.log(payload)
+
+    await PurchaseService.createPurchaseItem(props.purchaseId, payload)
+
+    // router.push(`/purchases/${props.purchaseId}`)
+}
 
 </script>
 
@@ -85,8 +142,8 @@ const productSearchPopupVisible = computed(() => formData.productQuery && !formD
             <h1 class="text-center">Cadastrar Item</h1>
 
             <div class="d-flex">
-                <button class="btn btn-light me-auto">Voltar</button>
-                <button class="btn btn-primary">Salvar</button>
+                <button class="btn btn-light me-auto" @click="goBack">Voltar</button>
+                <button class="btn btn-primary" @click="createItem">Salvar</button>
             </div>
         </header>
 
@@ -97,7 +154,7 @@ const productSearchPopupVisible = computed(() => formData.productQuery && !formD
 
                 <div class="col-12 input-group">
                     <div class="form-floating">
-                        <input type="text" class="form-control" placeholder="000000000000" v-model="formData.gtin">
+                        <input type="text" class="form-control" placeholder="000000000000" disabled v-model="formData.gtin">
                         <label for="floatingInput">Código de Barras</label>
                     </div>
                     <button class="btn btn-outline-secondary" @click.prevent="">
@@ -105,7 +162,7 @@ const productSearchPopupVisible = computed(() => formData.productQuery && !formD
                     </button>
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-6">
                     <div class="input-group">
                         <div class="form-floating">
                             <input type="text" class="form-control" placeholder="Marca" v-model="formData.brandQuery" @input="searchBrands">
@@ -124,7 +181,7 @@ const productSearchPopupVisible = computed(() => formData.productQuery && !formD
                     </div>
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-6">
                     <div class="input-group">
                         <div class="form-floating">
                             <input type="text" class="form-control" placeholder="Produto" v-model="formData.productQuery" @input="searchProducts">
@@ -142,17 +199,40 @@ const productSearchPopupVisible = computed(() => formData.productQuery && !formD
                         </ul>
                     </div>
                 </div>
-                <div class="col-md-6 input-group">
-                    <button class="btn btn-outline-secondary" type="button" :class="{active: !formData.weighted }" @click="setWeighted(false)">Unidade</button>
-                    <button class="btn btn-outline-secondary" type="button" :class="{active: formData.weighted }"  @click="setWeighted(true)">Peso</button>
+                <div class="col-12 col-md-12 input-group">
+                    <div class="form-floating">
+                        <input type="number" min="0" step="0.01" class="form-control" placeholder="Preço" v-model="formData.price">
+                        <label for="floatingInput">Preço</label>
+                    </div>
+                    <select class="form-select" v-model="formData.priceType">
+                        <option value="per-unit" selected>{{unitPriceLabel}}</option>
+                        <option value="total">Total</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-12 input-group">
                     <div class="form-floating">
                         <input type="text" class="form-control" placeholder="Quantidade" v-model="formData.quantity">
                         <label for="floatingInput">Quantidade</label>
                     </div>
-                    <span class="input-group-text">{{formData.weighted ? 'Gramas' : 'Un.'}}</span>
+                    <button class="btn btn-outline-secondary" type="button" :class="{active: !formData.weighted }" @click="setWeighted(false)">Uni.</button>
+                    <button class="btn btn-outline-secondary" type="button" :class="{active: formData.weighted }"  @click="setWeighted(true)">Gramas</button>
+                </div>
+                <div class="col-12 input-group">
+                    <div class="form-floating">
+                        <input type="date" class="form-control" placeholder="Validade" v-model="formData.expiresAt">
+                        <label for="floatingInput">Validade</label>
+                    </div>
                 </div>
             </form>
         </div>
     </main>
 
 </template>
+
+<style scoped>
+.input-group .form-select {
+    width: auto;
+    flex: unset;
+    padding-right: 2em;
+}
+</style>
